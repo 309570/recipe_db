@@ -1,0 +1,10 @@
+.env
+env/
+venv/
+*.pyc
+__pycache__
+Thumbs.db
+*.log
+logs/
+.idea/
+.vscode/
