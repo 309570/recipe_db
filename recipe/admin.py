@@ -16,6 +16,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "get_categories",
         "reviews",
     ]
+    exclude = ("slug",)
     inlines = [IngredientInline]
 
     def get_ingredients(self, obj):
@@ -34,7 +35,11 @@ class RecipeAdmin(admin.ModelAdmin):
     get_categories.short_description = "Categories"
 
 
-admin.site.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    exclude = ("slug",)
+
+
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(Ingredient)
 admin.site.register(RecipeIngredient)
 admin.site.register(About)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from pytils.translit import slugify
 
 
 class Category(models.Model):
@@ -7,16 +8,9 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, blank=True)
 
     def save(self, *args, **kwargs):
-        print("Сохранение категории:", self.title)  # Вывод для отладки
         self.title = self.title.lower()
+        self.slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
-        # if not self.slug:
-        #     self.slug = slugify(self.title)
-            # original_slug = self.slug
-            # num = 1
-            # while Category.objects.filter(slug=self.slug).exists():
-            #     self.slug = f'{original_slug}-{num}'
-            #     num += 1
 
     def __str__(self):
         return self.title
@@ -50,8 +44,7 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         self.title = self.title.lower()
-        if not self.slug:
-            self.slug = slugify(self.title)
+        self.slug = slugify(self.title)
         self.preparation = self.preparation.lower()
         super(Recipe, self).save(*args, **kwargs)
 
