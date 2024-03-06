@@ -45,7 +45,7 @@ class Recipe(models.Model):
     def save(self, *args, **kwargs):
         self.title = self.title.lower()
         self.slug = slugify(self.title)
-        self.preparation = self.preparation.lower()
+        # self.preparation = self.preparation.lower()
         super(Recipe, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -70,6 +70,7 @@ class About(models.Model):
     text = models.TextField()
     description_text = models.TextField()
     image = models.ImageField(upload_to="site_images/", blank=True, null=True)
+
 
     def __str__(self):
         return self.text

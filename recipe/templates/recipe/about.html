@@ -1,9 +1,20 @@
 {%extends "recipe/basic.html"%}
 
-{%block title%}{{about_data.title}}{%endblock%}
+{% block title %}{{ object.title }}{% endblock %}
 
-{%block body%}
-    <h1>Як шукати рецепти та ідеї, користуючись усіма можливостями сайту</h1>
-    <h2>{{about_data.title_content}}</h2>
-    <p>{{about_data.body}}</p>
+{% block content %}
+    <h1>{{object.title_content}}</h1>
+    <h2>{{object.}}</h2>
+    <p>{{object.}}</p>
 {%endblock%}
+
+class AboutDetail(DetailView):
+    model = About
+    template_name = "recipe/about.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Про що сайт"
+        context["title_content"] = "Як тут все працюе"
+        context["body"] = "Пока нет ничего"
+        return context

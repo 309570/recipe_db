@@ -97,8 +97,9 @@ class AboutDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "Про що сайт"
-        context["title_content"] = "Як тут все працюе"
-        context["body"] = "Пока нет ничего"
+        context["title_content"] = (
+            "Як шукати рецепти та ідеї, користуючись усіма можливостями сайту"
+        )
         return context
 
 
