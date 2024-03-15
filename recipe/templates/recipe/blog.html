@@ -1,10 +1,18 @@
 {%extends "recipe/basic.html"%}
 
-{%block title%}{{blog_data.title}}{%endblock%}
 
-{%block body%}
-    <h1>{{blog_data.title_content}}</h1>
-    {%for article in blog_data.body%}
-    <h2>{{article.title}}</h2>
-    {%endfor%}
-{%endblock%}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+    <a href="{% url 'index' %}">До пошуку</a>
+    <h1>{{title_content}}</h1>
+    {% for article in articles_list %}
+        <div class="article-preview">
+            <h2><a href="{% url 'article' article.slug %}">{{ article.title }}</a></h2>
+            {% if article.preview_article %}
+                <img src="{{ article.preview_article.url }}" alt="{{ article.title }}" style="max-width: 100%; display: block; margin: auto;">
+            {% endif %}
+            <p>{{ article.description|truncatechars:150 }}</p>
+        </div>
+    {% endfor %}
+{% endblock %}

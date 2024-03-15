@@ -1,11 +1,22 @@
 from typing import Any
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.views.generic import ListView, DetailView, TemplateView
+from django.views.generic import ListView, DetailView, View, TemplateView
 from django.shortcuts import render, redirect, get_list_or_404
-from recipe.models import Category, Recipe, About, Article
+from recipe.models import Category, Ingredient, Recipe, About, AboutSection, Article
 from .forms import SearchForm
 from .search_logic import handle_search
+from django.shortcuts import get_object_or_404
+from dal import autocomplete
+
+
+class IngredientAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Ingredient.objects.all()
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+            print("покажи ответ", self.q)
+            return qs
 
 
 def my_custom_page_not_found(request, exeption):
@@ -22,19 +33,26 @@ class IndexSearch(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['form'] = SearchForm(self.request.GET or None)
         search_result = handle_search(self.request)
-        context.update(
-            {
-                "form": search_result.get("form"),
-                "categories": search_result.get("categories"),
-                "frequent_ingredients": search_result.get("frequent_ingredients"),
-                "recipes": search_result.get("recipes"),
-                "errors": search_result.get("recipes"),
-                "title": "Пошук рецептів",
-                "title_content": "Пошук рецептів за інгредієнтами та категоріями",
-            }
-        )
+        context.update(search_result)
         return context
+
+    # def get(self, request, *args, **kwargs):
+    #     context = handle_search(request)
+    #     return render(request, self.template_name, context)
+        # context.update(
+        #     {
+        #         "form": search_result.get("form"),
+        #         "categories": search_result.get("categories"),
+        #         "frequent_ingredients": search_result.get("frequent_ingredients"),
+        #         "recipes": search_result.get("recipes"),
+        #         "errors": search_result.get("recipes"),
+        #         "title": "Пошук рецептів",
+        #         "title_content": "Пошук рецептів за інгредієнтами та категоріями",
+        #     }
+        # )
+        # return context
 
 
 class RecipesList(ListView):
@@ -63,8 +81,8 @@ class CategoryDetail(DetailView):
         category = self.get_object()
         recipes = Recipe.objects.filter(category=category)
         context["recipes"] = recipes
-        context["title"] = [f"Рецепти у категорії {self.category.title}"]
-        context["title_content"] = [f"Рецепти у категорії {self.category.title}"]
+        context["title"] = f"Категорія {category.title}"
+        context["title_content"] = f"Рецепти в категорії {category.title}"
         return context
 
 
@@ -80,26 +98,28 @@ class RecipeDetail(DetailView):
         recipe = context["recipe"]
         ingredients_data = recipe.recipeingredient_set.all()
         context["ingredients_list"] = [
-            f"{ri.ingredient.name} - {ri.unit if ri.unit else ''} можна замінити на{ri.substitutes if ri.substitutes else '' }"
+            f"{ri.ingredient.name} - {ri.unit if ri.unit else ''}" + (f"  можна замінити на{ri.substitutes}" if ri.substitutes else "")
             for ri in ingredients_data
         ]
         context["category_name"] = [
             category.title for category in recipe.category.all()
         ]
         context["title"] = "Пошук рецептів"
+        context["title_content"] = "Шукаємо рецепти та ідеї за інгредієнтами!"
         return context
 
 
-class AboutDetail(DetailView):
-    model = About
+class AboutDetail(TemplateView):
     template_name = "recipe/about.html"
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Про що сайт"
-        context["title_content"] = (
-            "Як шукати рецепти та ідеї, користуючись усіма можливостями сайту"
-        )
+        about_site = About.objects.first()
+        context["about"] = about_site
+        context['sections'] = AboutSection.objects.filter(about=about_site)
+        context["title"] = "Як користуватися"
+
         return context
 
 

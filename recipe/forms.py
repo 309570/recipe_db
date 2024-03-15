@@ -1,12 +1,23 @@
 from django import forms
 from django.db.models import Count
-from .models import Category, Ingredient, Recipe
+from .models import Category, Ingredient, Recipe, RecipeIngredient
+from dal import autocomplete
+
+class RecipeIngredientForm(forms.ModelForm):
+    class Meta:
+        model = RecipeIngredient
+        fields = "__all__"
+        widgets = {
+            "ingredient": autocomplete.ModelSelect2(url="ingredient-autocomplete")
+        }
 
 
 class SearchForm(forms.Form):
     ingredient = forms.ModelMultipleChoiceField(
         queryset=Ingredient.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
+        widget=autocomplete.ModelSelect2Multiple(
+            url="ingredient-autocomplete"),
+        # widget=forms.CheckboxSelectMultiple,
         required=False,
     )
     category = forms.ModelMultipleChoiceField(
@@ -33,15 +44,5 @@ def get_frequent_ingredients_names():
         "-frequency").values_list('name', flat=True)[:12]
 
 
-# def get_frequent_ingredients_names():
-#     # Возвращает список имен часто используемых ингредиентов
-#     return (
-#         Recipe.objects.values_list("ingredient__name", flat=True)
-#         .annotate(frequency=Count("ingredient__name"))
-#         .order_by("-frequency")[:12]
-#     )
-# def __init__(self, *args, **kwargs):
-#     super(SearchForm, self).__init__(*args, **kwargs)
-#     self.fields["frequent_ingredients"].queryset = Ingredient.objects.annotate(
-#         frequency=Count("recipes")
-#     ).order_by("-frequency")[:12]
+# class SearchingRecipe(forms.Form):
+#     user_input = forms.CharField(min_length=3, max_length=10)

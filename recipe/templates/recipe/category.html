@@ -1,0 +1,18 @@
+{%extends "recipe/basic.html"%}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <a href="{% url 'index' %}">До пошуку</a>
+    <h1>{{ title_content }}</h1>
+    {% for recipe in recipes %}
+        <div class="recipe-preview">
+            <h2><a href="{% url 'recipe' recipe.slug %}">{{ recipe.title|upper }}</a></h2>
+            {% if recipe.body_image %}
+                <img src="{{ recipe.body_image.url }}" alt="{{ recipe.title }}" style="max-width: 100%; display: block; margin: auto;">
+            {% endif %}
+            <p>{{ recipe.preparation|truncatechars:80 }}</p>
+            
+        </div>
+    {% endfor %}
+{% endblock %}

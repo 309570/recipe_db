@@ -1,23 +1,41 @@
 {%extends "recipe/basic.html"%}
 
-{%block title%}{{recipe_data.title}}{%endblock%}
+{% block title %}{{ recipe.title }}{% endblock %}
 
-{%block body%}
-    <h1>Шукаємо рецепти та ідеї за інгредієнтами!</h1>
-    <h2>{{recipe_data.title_content}}</h2>
-     {% if recipe_data.title_image %}
-    <img src="{{recipe_data.title_image.url}}" alt="Фото рецепта">
-    {% endif %}
-    {% for categoriy in recipe_data.categories %}
-    <h3>В категоріях: {{category}}</h3>
-    {% endfor %}
-    <h4>Інгредієнти:</h4>
-    {%for ingredient in recipe_data.ingredients%}
-    <h5>{{ingredient}}</h5>
-    {% endfor %}
-    {% if recipe_data.body_image %}
-    <img src="{{recipe_data.body_image.url}}" alt="Інгредієнти">
-    {% endif %}
-    <p>Приготування: {{recipe_data.preparation}}</p>
-    <p>Сподобалось: {{recipe_data.reviews}}</p>
-{%endblock%}
+{% block content %}
+    <a href="{% url 'recipes' %}">До списку рецептів</a>
+    <a href="{% url 'index' %}">До пошуку</a>
+    <div class="recipe">
+        <h1>{{ recipe.title|upper }}</h1>
+        {% if recipe.title_image %}
+            <div class="recipe-image">
+                <img src="{{ recipe.title_image.url }}" alt="{{ recipe.title }}" style="max-width: 100%; display: block; margin: auto;">
+            </div>
+        {% endif %}
+        <div class="recipe-categories">
+            <h3>Категорії:</h3>
+            <ul class="no-list-style">
+                {% for category in recipe.category.all %}
+                    <li><a href="{% url 'category' category.slug %}">{{ category.title|upper }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="recipe-ingredients">
+            <h3>Інгредієнти:</h3>
+            <ul>
+                {% for ingredient in ingredients_list %}
+                    <li>{{ ingredient }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="recipe-preparation">
+            <h3>Приготування:</h3>
+            <p>{{ recipe.preparation }}</p>
+        </div>
+
+        <div class="recipe-reviews">
+            <p>Сподобалось: {{ recipe.reviews }}</p>
+        </div>
+    </div>
+{% endblock %}
+

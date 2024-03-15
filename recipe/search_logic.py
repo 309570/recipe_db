@@ -33,7 +33,7 @@ def handle_search(request):
     form = SearchForm(request.GET)
     errors = []
 
-    if form.is_valid():
+    if form.is_valid() and any(value for key, value in request.GET.items()):
         title_recipe = form.cleaned_data.get("title")
         if title_recipe:
             recipes = Recipe.objects.filter(title__icontains=title_recipe.lower())
@@ -54,14 +54,16 @@ def handle_search(request):
                 for ingredient_name in ingredient_filter:
                     recipes = recipes.filter(ingredient__name__icontains=ingredient_name)
                 if not recipes.exists():
-                    errors = "За Вашим запитом рецепти не знайдені. Уточніть умови пошуку, можливо, ви ввели інгредієнти, що повторюються. Або Ви можете ознайомитись із повним списком рецептів."
-
+                    errors = errors.append(
+                        "За Вашим запитом рецепти не знайдені. Уточніть умови пошуку, можливо, ви ввели інгредієнти, що повторюються."
+                    )
+            error_message = ' '.join(errors)
             if errors or not recipes.exists():
                 return {
                     "form": form,
                     "categories": Category.objects.all(),
                     "frequent_ingredients": get_frequent_ingredients_names(),
-                    "errors": errors
+                    "errors": error_message,
                 }
         if recipes.exists:
 
@@ -72,3 +74,11 @@ def handle_search(request):
                 "categories": Category.objects.all(),
                 "frequent_ingredients": get_frequent_ingredients_names(),
             }
+
+    else:
+        return {
+            "form": form,
+            "recipes": Recipe.objects.none(),
+            "categories": Category.objects.all(),
+            "frequent_ingredients": get_frequent_ingredients_names(),
+        }

@@ -1,20 +1,16 @@
 {%extends "recipe/basic.html"%}
 
-{% block title %}{{ object.title }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h1>{{object.title_content}}</h1>
-    <h2>{{object.}}</h2>
-    <p>{{object.}}</p>
-{%endblock%}
-
-class AboutDetail(DetailView):
-    model = About
-    template_name = "recipe/about.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Про що сайт"
-        context["title_content"] = "Як тут все працюе"
-        context["body"] = "Пока нет ничего"
-        return context
+    <a href="{% url 'index' %}">До пошуку рецептів</a>
+    <a href="{% url 'blog' %}">До блогу</a>
+    <h1>{{ about.title }}</h1>
+    <div>{{ about.text }}</div>
+    {% for section in sections %}
+        <h2>{{ section.inscription }}</h2>
+        {% if section.image %}
+            <img src="{{ section.image.url }}" alt="{{ section.inscription }}" style="max-width: 100%;">
+        {% endif %}
+    {% endfor %}
+{% endblock %}
