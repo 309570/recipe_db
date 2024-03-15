@@ -4,11 +4,8 @@
 {%block title%} Пошук рецептів {%endblock%}
 
 {%block content%}
-<from metod="get" acttion="{% url 'index' %}">
-    {% crispy form %}
-    <button type="submit" class="btn btn-primary">Пошук</button>
-</form>
 
+{% crispy form %}
 
 <div>
     {% for recipe in recipes  %}
@@ -22,6 +19,11 @@
     </div>
 
     {% endfor %}
-</div>    
+</div>
+<div>
+    {% if errors  %}
+</div>
+    <h3></h3>
+
 {%endblock%}
 

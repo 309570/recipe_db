@@ -3,37 +3,42 @@ from recipe.forms import SearchForm
 from django.db.models import Q, Count
 from .forms import get_frequent_ingredients_names
 
+class HandleSearch:
+    def process(self, form):
+        pass
+    
+    def get_check_ingredients(form):
+        """Получение ингредиентов для фильтрации и проверка их соответствия условим поиска."""
+        input_ingredient = form.cleaned_data.get("ingredient", [])
+        # получили ингредиенты из формы в виде списка обьектов.
+        frequent_ingredients_selected = form.cleaned_data.get("frequent_ingredients", [])
+        all_ingredients = list(input_ingredient) + list(frequent_ingredients_selected)
+        all_ingredients = [ingredient.name.lower() for ingredient in all_ingredients]
+        # список обьектов преобразовали в список строк имен и привели к нижнему регистру
 
-def get_check_ingredients(form):
+        if (len(all_ingredients)) > 4:
+            # проверили что выбрано не более 4х ингредиентов
+            return (
+                None,
+                "Будь ласка, виберіть не більше 4х інгредієнтів."
+            )
 
-    """Получение ингредиентов для фильтрации и проверка их соответствия условим поиска."""
-    input_ingredient = form.cleaned_data.get("ingredient", [])
-    # получили ингредиенты из формы в виде списка обьектов.
-    frequent_ingredients_selected = form.cleaned_data.get("frequent_ingredients", [])
-    all_ingredients = list(input_ingredient) + list(frequent_ingredients_selected)
-    all_ingredients = [ingredient.name.lower() for ingredient in all_ingredients]
-    # список обьектов преобразовали в список строк имен и привели к нижнему регистру
-
-    if (len(all_ingredients)) > 4:
-        # проверили что выбрано не более 4х ингредиентов
-        return None, "Будь ласка, виберіть не більше 4х інгредієнтів. Або Ви можете ознайомитись із повним списком рецептів"
-
-    else:
-        return all_ingredients, None
+        else:
+            return all_ingredients, None
 
 
-def get_select_category(form):
-    """Функция для получения категорий."""
-    select_category = form.cleaned_data.get("category", [])
-    select_category = [category.title for category in select_category]
-    return select_category
+    def get_select_category(form):
+        """Функция для получения категорий."""
+        select_category = form.cleaned_data.get("category", [])
+        select_category = [category.title for category in select_category]
+        return select_category
 
-def handle_search(request):
-    recipes = Recipe.objects.all()
-    form = SearchForm(request.GET)
-    errors = []
 
-    if form.is_valid() and any(value for key, value in request.GET.items()):
+    def handle_search(form):
+        recipes = Recipe.objects.all()
+        errors = []
+
+        # if form.is_valid():
         title_recipe = form.cleaned_data.get("title")
         if title_recipe:
             recipes = Recipe.objects.filter(title__icontains=title_recipe.lower())
@@ -43,7 +48,10 @@ def handle_search(request):
             ingredient_filter, ingredient_filter_error = get_check_ingredients(form)
 
             if ingredient_filter_error:
-                errors.append(ingredient_filter_error)
+                if isinstance(ingredient_filter_error, list):
+                    errors.extend(ingredient_filter_error)
+                else:
+                    errors.append(ingredient_filter_error)
 
             if select_category:
                 recipes = recipes.filter(category__title__in=select_category)
@@ -52,12 +60,14 @@ def handle_search(request):
                 pass
             elif ingredient_filter and not ingredient_filter_error:
                 for ingredient_name in ingredient_filter:
-                    recipes = recipes.filter(ingredient__name__icontains=ingredient_name)
-                if not recipes.exists():
-                    errors = errors.append(
-                        "За Вашим запитом рецепти не знайдені. Уточніть умови пошуку, можливо, ви ввели інгредієнти, що повторюються."
+                    recipes = recipes.filter(
+                        ingredient__name__icontains=ingredient_name
                     )
-            error_message = ' '.join(errors)
+                if not recipes.exists():
+                    errors.append(
+                        "За Вашим запитом рецепти не знайдені. Уточніть умови пошуку."
+                    )
+            error_message = " ".join(errors)
             if errors or not recipes.exists():
                 return {
                     "form": form,
@@ -75,10 +85,10 @@ def handle_search(request):
                 "frequent_ingredients": get_frequent_ingredients_names(),
             }
 
-    else:
-        return {
-            "form": form,
-            "recipes": Recipe.objects.none(),
-            "categories": Category.objects.all(),
-            "frequent_ingredients": get_frequent_ingredients_names(),
-        }
+        # else:
+        #     return {
+        #         "form": form,
+        #         "recipes": Recipe.objects.none(),
+        #         "categories": Category.objects.all(),
+        #         "frequent_ingredients": get_frequent_ingredients_names(),
+        #     }

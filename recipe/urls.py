@@ -1,8 +1,7 @@
 from django.urls import path, include
 from django.conf.urls import handler404
-# from .forms import 
+# from .forms import
 from .views import (
-    IngredientAutocomplete,
     IndexSearch,
     RecipesList,
     CategoryDetail,
@@ -10,7 +9,9 @@ from .views import (
     AboutDetail,
     BlogList,
     ArticleDetail,
- )
+    IngredientAutocomplete,
+    TitleAutocomplete,
+)
 
 
 urlpatterns = [
@@ -27,7 +28,8 @@ urlpatterns = [
     path("blog/", BlogList.as_view(), name="blog"),
     path("blog/<slug:article_slug>/",
          ArticleDetail.as_view(), name="article"),
-    path('ingredient-autocomplete/', IngredientAutocomplete.as_view(), name='ingredient-autocomplete')
+    path('ingredient-autocomplete/', IngredientAutocomplete.as_view(), name='ingredient-autocomplete'),
+    path('title-autocomplete/', TitleAutocomplete.as_view(), name='title-autocomplete'),
 ]
 
 handler404 = "recipe.views.my_custom_page_not_found"

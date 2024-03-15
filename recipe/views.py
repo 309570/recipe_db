@@ -3,6 +3,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.views.generic import ListView, DetailView, View, TemplateView
 from django.shortcuts import render, redirect, get_list_or_404
+from django.urls import reverse
 from recipe.models import Category, Ingredient, Recipe, About, AboutSection, Article
 from .forms import SearchForm
 from .search_logic import handle_search
@@ -15,14 +16,23 @@ class IngredientAutocomplete(autocomplete.Select2QuerySetView):
         qs = Ingredient.objects.all()
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
-            print("покажи ответ", self.q)
-            return qs
+        return qs
+
+
+class TitleAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Recipe.objects.filter()
+
+        if self.q:
+            qs = qs.filter(title__icontains=self.q)
+
+        return qs
 
 
 def my_custom_page_not_found(request, exeption):
     return render(
         request,
-        "Такої сторінки не знайдено. Можливо, ця помилка має тимчасовий характер. Спробуйте повторити пошук",
+        "Такої сторінки не знайдено. Спробуйте повторити пошук",
         {},
         status=404,
     )
@@ -31,28 +41,36 @@ def my_custom_page_not_found(request, exeption):
 class IndexSearch(TemplateView):
     template_name = "recipe/index.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = SearchForm(self.request.GET or None)
-        search_result = handle_search(self.request)
-        context.update(search_result)
-        return context
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        context["form"] = SearchForm()  # Добавляем пустую форму в контекст
+        return self.render_to_response(context)
 
-    # def get(self, request, *args, **kwargs):
-    #     context = handle_search(request)
-    #     return render(request, self.template_name, context)
-        # context.update(
-        #     {
-        #         "form": search_result.get("form"),
-        #         "categories": search_result.get("categories"),
-        #         "frequent_ingredients": search_result.get("frequent_ingredients"),
-        #         "recipes": search_result.get("recipes"),
-        #         "errors": search_result.get("recipes"),
-        #         "title": "Пошук рецептів",
-        #         "title_content": "Пошук рецептів за інгредієнтами та категоріями",
-        #     }
-        # )
-        # return context
+    def post(self, request, *args, **kwargs):
+        form = SearchForm(request.POST)
+        context = {"form": form}
+        if form.is_valid():
+            search_result = handle_search(form)
+            context.update(search_result)
+            return self.render_to_response(
+                context
+            )  # Изменено с redirect на рендер с новым контекстом
+        else:
+            return self.render_to_response(context)
+
+
+# class IndexSearch(TemplateView):
+#     template_name = "recipe/index.html"
+
+#     def post(self, request, **kwargs):
+#         form = SearchForm(request.POST)
+#         context = {"form": form}
+#         if form.is_valid():
+#             search_result = handle_search(form)
+#             context.update(search_result)
+#             return redirect(reverse("index"))
+#         else:
+#             return self.render_to_response(context)
 
 
 class RecipesList(ListView):
