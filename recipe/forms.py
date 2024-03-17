@@ -3,7 +3,8 @@ from django.db.models import Count
 from .models import Category, Ingredient, Recipe, RecipeIngredient
 from dal import autocomplete
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Reset, Layout, Div
+from crispy_forms.bootstrap import FormActions
 
 class RecipeIngredientForm(forms.ModelForm):
     class Meta:
@@ -23,14 +24,14 @@ class SearchForm(forms.Form):
         required=False,
     )
 
+    title = forms.CharField(widget=autocomplete.ListSelect2(url="title-autocomplete"),
+        label="Title",
+        required=False,
+    )
+
     category = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        required=False,
-    )
-    
-    title = forms.CharField(widget=autocomplete.ListSelect2(url="title-autocomplete"),
-        label="Title",
         required=False,
     )
 
@@ -46,7 +47,27 @@ class SearchForm(forms.Form):
             name__in=get_frequent_ingredients_names()
         )
         self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.add_input(Submit("submit", "Пошук рецептів"))
+        self.helper.add_input(Reset("Reset This Form", "Очистити форму"))
+        # self.helper.layout = Layout(
+        #     FormActions(
+        #         Div(
+        #             Submit(
+        #                 "submit",
+        #                 "Пошук рецептів",
+        #                 css_class="btn btn-success btn-lg",
+        #                 style="margin-right:10px;",
+        #             ),
+        #             Reset(
+        #                 "form",
+        #                 "Очистити форму",
+        #                 css_class="btn btn-secondary btn-lg",
+        #                 style="margin-left: auto;",
+        #             ),
+        #             css_class="d-flex justify-content-between",
+        #         )
+        #     )
+        # )
 
 def get_frequent_ingredients_names():
     return Ingredient.objects.annotate(frequency=Count("recipes")).order_by(

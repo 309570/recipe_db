@@ -15,20 +15,17 @@ class IngredientAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         qs = Ingredient.objects.all()
         if self.q:
-            qs = qs.filter(name__istartswith=self.q)
+            qs = qs.filter(name__icontains=self.q)
             print("qs", qs)
         return qs
 
 
 class TitleAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
-        # print("Query: ", self.q)
         qs = Recipe.objects.all()
-        # print("qs1", qs)
 
         if self.q:
             qs = qs.filter(title__icontains=self.q)
-            # print("qs-control", qs)
         return qs
     def get_result_value(self, item):
         return item.title

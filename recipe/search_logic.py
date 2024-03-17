@@ -10,7 +10,7 @@ class SearchHandler:
 
     def get_check_ingredients(self):
         """Получение ингредиентов для фильтрации и проверка их соответствия условим поиска."""
-        input_ingredient = self.form.cleaned_data.get("ingredient", [])
+        input_ingredient = self.form.cleaned_data.get("ingredient", []) 
         # получили ингредиенты из формы в виде списка обьектов.
         frequent_ingredients_selected = self.form.cleaned_data.get(
             "frequent_ingredients", []

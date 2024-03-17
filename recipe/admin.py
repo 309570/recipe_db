@@ -23,6 +23,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "get_categories",
         "reviews",
     ]
+    search_fields = ["title"]
     exclude = ("slug",)
     inlines = [IngredientInline]
 
@@ -59,6 +60,5 @@ class AboutSectionInline(admin.ModelAdmin):
 
 
 admin.site.register(Category, CategoryAdmin)
-# admin.site.register(Ingredient)
 admin.site.register(RecipeIngredient)
 admin.site.register(Article)
