@@ -8,22 +8,22 @@
 {% crispy form %}
 
 <div>
-    {% for recipe in recipes  %}
-</div>
-    <div class="recipe-preview">
-        <h2><a href="{% url 'recipe' recipe.slug %}">{{ recipe.title|upper }}</a></h2>
-        {% if recipe.body_image %}
-            <img src="{{ recipe.body_image.url }}" alt="{{ recipe.title }}" style="max-width: 100%; display: block; margin: auto;">
-        {% endif %}
-        <p>Сподобалось: {{ recipe.reviews}}</p>
-    </div>
-
-    {% endfor %}
+    {% if recipes  %}
+        {% for recipe in recipes  %}
+            <div class="recipe-preview">
+                <h2><a href="{% url 'recipe' recipe.slug %}">{{ recipe.title|upper }}</a></h2>
+                {% if recipe.body_image %}
+                    <img src="{{ recipe.body_image.url }}" alt="{{ recipe.title }}" style="max-width: 100%; display: block; margin: auto;">
+                {% endif %}
+                <p>Сподобалось: {{ recipe.reviews}}</p>
+            </div>
+        {% endfor %}
+    {% endif %}
 </div>
 <div>
     {% if errors  %}
+<div class="alert alert-danger">{{errors}}</div>
+    {% endif %}
 </div>
-    <h3></h3>
-
 {%endblock%}
 

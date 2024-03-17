@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_list_or_404
 from django.urls import reverse
 from recipe.models import Category, Ingredient, Recipe, About, AboutSection, Article
 from .forms import SearchForm
-from .search_logic import handle_search
+from .search_logic import SearchHandler
 from django.shortcuts import get_object_or_404
 from dal import autocomplete
 
@@ -16,17 +16,22 @@ class IngredientAutocomplete(autocomplete.Select2QuerySetView):
         qs = Ingredient.objects.all()
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
+            print("qs", qs)
         return qs
 
 
 class TitleAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
-        qs = Recipe.objects.filter()
+        # print("Query: ", self.q)
+        qs = Recipe.objects.all()
+        # print("qs1", qs)
 
         if self.q:
             qs = qs.filter(title__icontains=self.q)
-
+            # print("qs-control", qs)
         return qs
+    def get_result_value(self, item):
+        return item.title
 
 
 def my_custom_page_not_found(request, exeption):
@@ -43,35 +48,22 @@ class IndexSearch(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        context["form"] = SearchForm()  # Добавляем пустую форму в контекст
+        context["form"] = SearchForm()
+        context["recipes"] = Recipe.objects.none()
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         form = SearchForm(request.POST)
         context = {"form": form}
         if form.is_valid():
-            search_result = handle_search(form)
+            search_handler = SearchHandler(form)
+            search_result = search_handler.process()
             context.update(search_result)
-            return self.render_to_response(
-                context
-            )  # Изменено с redirect на рендер с новым контекстом
-        else:
             return self.render_to_response(context)
-
-
-# class IndexSearch(TemplateView):
-#     template_name = "recipe/index.html"
-
-#     def post(self, request, **kwargs):
-#         form = SearchForm(request.POST)
-#         context = {"form": form}
-#         if form.is_valid():
-#             search_result = handle_search(form)
-#             context.update(search_result)
-#             return redirect(reverse("index"))
-#         else:
-#             return self.render_to_response(context)
-
+        else:
+            context["recipes"] = []
+            return self.render_to_response(context)
+            # return redirect(reverse("index"))
 
 class RecipesList(ListView):
     model = Recipe
